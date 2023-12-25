@@ -103,7 +103,7 @@ def get_video_details(youtube, video_ids):
                             Published_date=video['snippet']['publishedAt'],
                             Views=video['statistics']['viewCount'],
                             Likes=video['statistics']['likeCount'],
-                            Dislikes=video['statistics']['dislikeCount'],
+                            Dislikes=video['statistics'].get('dislikeCount', 0), # use get if not every video has dislike
                             Comments=video['statistics']['commentCount']
                             )
             all_video_stats.append(video_stats)
@@ -111,4 +111,31 @@ def get_video_details(youtube, video_ids):
 
 video_details=get_video_details(youtube, video_ids)
 video_data=pd.DataFrame(video_details)
-print(video_data)
+# модификация данных в читабельный и удобный вид и создание колонн
+video_data['Published_date']=pd.to_datetime(video_data['Published_date']).dt.date
+video_data['Views']=pd.to_numeric(video_data['Views'])
+video_data['Likes']=pd.to_numeric(video_data['Likes'])
+video_data['Dislikes']=pd.to_numeric(video_data['Dislikes'])
+# video_data['Views']=pd.to_numeric(video_data['Views'])
+
+# identify top-10 viwable videos
+top10_videos=video_data.sort_values(by='Views', ascending=False)
+ax1=sns.barplot(x='Views', y='Title', data=top10_videos)
+# print(top10_videos)
+
+# every month how many videos has reposted
+video_data['Month']=pd.to_datetime(video_data['Published_date']).dt.strftime('%b')
+videos_per_month=video_data.groupby('Month', as_index=False).size()
+# strftime-month date
+# print(videos_per_month)
+
+# going to sort by months and index. index will represented by month
+sort_order=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+videos_per_month.index=pd.CategoricalIndex(videos_per_month['Month'], categories=sort_order, ordered=True)
+videos_per_month=videos_per_month.sort_index()
+print(videos_per_month)
+
+# finding out on seaborn diagram
+ax2=sns.barplot(x='Month', y='size', data=videos_per_month)
