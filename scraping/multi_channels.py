@@ -38,7 +38,7 @@ channel_data=pd.DataFrame(channel_statistics)
 # channel_data['Subscribers']=pd.to_numeric(channel_data['Subscribers'])
 # channel_data['Views']=pd.to_numeric(channel_data['Views'])
 # channel_data['Total_videos']=pd.to_numeric(channel_data['Total_videos'])
-print(channel_data)
+# print(channel_data)
 # sns.set(rc={'figure.figsize':(10,8)})
 # ax=sns.barplot(x='Channel_name', y='Subscribers', data=channel_data)
 # показывает в виде графика у кого больше всего подписчиков
@@ -54,6 +54,29 @@ def get_video_ids(youtube, playlist_id):
         maxResults=50)
     
     response=request.execute()
-    return response
+
+    video_ids=[]
+
+    for i in range((len)(response['items'])):
+        video_ids.append(response['items']['contentDetails']['videoID'])
+        next_page_token=response.get('nextPageToken')
+        more_pages=True
+        # добавляем новую переменную? чтобы определить, есть ли еще страницы, для определения
+        # используется токен страницы
+        while more_pages:
+            if next_page_token is None:
+                more_pages=False
+            else:
+                request=youtube.playlistItems().list(
+                    part='contentDetails',
+                    playlistId=playlist_id,
+                    maxResults=50,
+                    pageToken=next_page_token
+                )
+                for i in range(len(response['items'])):
+                    video_ids.append(response['items'][i]['contentDetails']['videoID'])
+                    next_page_token=response.get('nextPageToken')
+
+    return len(video_ids)
 
 print()
