@@ -1,5 +1,6 @@
 from googleapiclient.discovery import build
 import pandas as pd
+from tabulate import tabulate
 import seaborn as sns
 import requests 
 
@@ -25,7 +26,8 @@ def get_channel_stats(youtube, channel_ids):
         data=dict(Channel_name= response['items'][i]['snippet']['title'],
                   Subscribers=response['items'][i]['statistics']['subscriberCount'],
                   Views=response['items'][i]['statistics']['viewCount'],
-                  Total_videos=response['items'][i]['statistics']['videoCount'])
+                  Total_videos=response['items'][i]['statistics']['videoCount'],
+                  playlist_id=response['items'][i]['contentDetails']['relatedPlaylists']['uploads'])
         all_data.append(data)
     return all_data
 
@@ -35,9 +37,23 @@ channel_data=pd.DataFrame(channel_statistics)
 # print(channel_statistics)
 # channel_data['Subscribers']=pd.to_numeric(channel_data['Subscribers'])
 # channel_data['Views']=pd.to_numeric(channel_data['Views'])
-channel_data['Total_videos']=pd.to_numeric(channel_data['Total_videos'])
-# print(channel_data)
-sns.set(rc={'figure.figsize':(10,8)})
-ax=sns.barplot(x='Channel_name', y='Subscribers', data=channel_data)
+# channel_data['Total_videos']=pd.to_numeric(channel_data['Total_videos'])
+print(channel_data)
+# sns.set(rc={'figure.figsize':(10,8)})
+# ax=sns.barplot(x='Channel_name', y='Subscribers', data=channel_data)
 # показывает в виде графика у кого больше всего подписчиков
-print(ax)
+# # print(ax)
+
+# playlist_id=channel_data.loc[channel_data['Channel_name']]
+#  function ti get video ids
+
+def get_video_ids(youtube, playlist_id):
+    request=youtube.playlistItems().list(
+        part='contentDetails',
+        playlist_id=playlist_id,
+        maxResults=50)
+    
+    response=request.execute()
+    return response
+
+print()
