@@ -139,3 +139,6 @@ print(videos_per_month)
 
 # finding out on seaborn diagram
 ax2=sns.barplot(x='Month', y='size', data=videos_per_month)
+
+# exporting to csv file
+video_data.to_csv('Video_Details(KenJee).csv')
